@@ -1,0 +1,12 @@
+
+
+*.exe
+*.obj
+*.ilk
+*.pdb
+*.sln
+*.bmp
+
+\.vs
+
+
