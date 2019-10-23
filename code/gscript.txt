@@ -1,0 +1,77 @@
+
+
+
+material1 : material
+{
+	color = .5 .8 .2;
+}
+
+material2 : material
+{
+	color = .1 .1 .5;
+}
+
+
+
+distant_light
+{
+	color = 1 1 1;
+	direction = 0 1 0;
+}
+
+spherical_light
+{
+	color = 1 1 1;
+	position = 0 0 10;
+}
+
+quad
+{
+	v0 = 0 0 0;
+	v1 = 1 0 0;
+	v3 = 1 1 0;
+	v4 = 0 1 0;
+	material = material1;
+}
+
+sphere
+{
+	position = 0 0 0;
+	radius = 3;
+	
+	material = material2;
+}
+
+
+/*
+	TOKENS_KIND:
+		id
+		float
+		:
+		;
+		=
+		{
+		}
+		
+*/
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

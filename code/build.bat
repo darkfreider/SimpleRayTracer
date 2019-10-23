@@ -2,7 +2,7 @@ echo off
 
 REM Run this file to compile raytracer
 
-SET compiler_options=/Zi
+SET compiler_options=/Zi /Fm
 
 IF NOT EXIST "..\build" mkdir ..\build
 pushd ..\build
