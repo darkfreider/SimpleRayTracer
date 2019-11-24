@@ -6,6 +6,7 @@
 *.pdb
 *.sln
 *.bmp
+*.map
 
 \.vs
 
