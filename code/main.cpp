@@ -34,13 +34,13 @@ public:
 
 class Object
 {
-	std::shared_ptr<Material> material;
+	Material *material;
 
 public:
 
-	Object() { }
+	Object() : material(0) { }
 
-	Object(const std::shared_ptr<Material> m) : material(m) 
+	Object(Material *m) : material(m) 
 	{
 		//std::cout << "Object created" << std::endl;
 	}
@@ -49,12 +49,12 @@ public:
 		//std::cout << "Object destoyed" << std::endl;
 	}
 
-	const std::shared_ptr<Material> get_material() const
+	Material *get_material() const
 	{
 		return (material);
 	}
 
-	void set_material(const std::shared_ptr<Material> mat)
+	void set_material(Material *mat)
 	{
 		material = mat;
 	}
@@ -192,14 +192,16 @@ void Image32::write_image(const std::string& file_name) const
 	}
 }
 
-Vector3 ray_trace(const Sphere& s, const Vector3& ray_origin, const Vector3& ray_dir)
+Vector3 ray_trace(const Object& obj, const Vector3& ray_origin, const Vector3& ray_dir)
 {
 	Vector3 result = Vector3(0.2, 0, 0.8);
 
 	float t = 0.0f;
-	if (s.intersect(ray_origin, ray_dir, t))
+	if (obj.intersect(ray_origin, ray_dir, t))
 	{
-		result = s.get_material()->get_color();
+		Material *mat = obj.get_material();
+
+		result = mat->get_color();
 	}
 
 	return (result);
@@ -222,7 +224,7 @@ int main(void)
 	Image32 image(1280, 720);
 
 
-	Vector3 camera_pos(0, -20, 0);
+	Vector3 camera_pos(0, -10, 0);
 
 	Vector3 camera_z = camera_pos.normalize(); // look at (0, 0, 0)
 	Vector3 camera_x = Vector3(0, 0, 1).cross(camera_z).normalize();
@@ -246,11 +248,13 @@ int main(void)
 
 	Vector3 film_center = camera_pos - film_distance * camera_z;
 
-	std::vector<std::shared_ptr<Material>> materials;
-	materials.push_back(std::make_shared<Material>(Vector3(0, 1, 1)));
+	std::vector<Material *> materials;
+	materials.push_back(new Material(Vector3(1, 0, 0)));
 
-	Sphere s(Vector3(0, 0, 0), 2);
-	s.set_material(materials.at(0));
+	std::vector<Object *> objects;
+	objects.push_back(new Sphere(Vector3(0, 0, 0), 2));
+
+	objects.at(0)->set_material(materials.at(0));
 
 	uint32_t *out = image.get_pixels();
 	for (int y = 0; y < image.get_height(); y++)
@@ -266,7 +270,7 @@ int main(void)
 			Vector3 ray_origin(camera_pos);
 			Vector3 ray_dir = (film_pos - ray_origin).normalize();
 
-			uint32_t color = unpack_vector3_to_argb(ray_trace(s, ray_origin, ray_dir));
+			uint32_t color = unpack_vector3_to_argb(ray_trace(*objects.at(0), ray_origin, ray_dir));
 
 			out[y * image.get_width() + x] = color;
 
