@@ -38,11 +38,7 @@ class Object
 
 public:
 
-	Object()
-	{
-		material = std::make_shared<Material>();
-		//std::cout << "Object created" << std::endl;
-	}
+	Object() { }
 
 	Object(const std::shared_ptr<Material> m) : material(m) 
 	{
@@ -63,7 +59,7 @@ public:
 		material = mat;
 	}
 
-	virtual bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) = 0;
+	virtual bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const = 0;
 
 };
 
@@ -85,7 +81,7 @@ public:
 		//std::cout << "Sphere destoyed" << std::endl;
 	}
 
-	bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) override
+	bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const
 	{
 		bool result = false;
 		const float tolerance = 0.0001f;
@@ -196,12 +192,9 @@ void Image32::write_image(const std::string& file_name) const
 	}
 }
 
-Vector3 ray_trace(const Vector3& ray_origin, const Vector3& ray_dir)
+Vector3 ray_trace(const Sphere& s, const Vector3& ray_origin, const Vector3& ray_dir)
 {
 	Vector3 result = Vector3(0.2, 0, 0.8);
-
-	Sphere s(Vector3(0, 0, 0), 2);
-	s.set_material(std::make_shared<Material>(Vector3(1, 0, 0)));
 
 	float t = 0.0f;
 	if (s.intersect(ray_origin, ray_dir, t))
@@ -229,7 +222,7 @@ int main(void)
 	Image32 image(1280, 720);
 
 
-	Vector3 camera_pos(0, -10, 0);
+	Vector3 camera_pos(0, -20, 0);
 
 	Vector3 camera_z = camera_pos.normalize(); // look at (0, 0, 0)
 	Vector3 camera_x = Vector3(0, 0, 1).cross(camera_z).normalize();
@@ -238,11 +231,26 @@ int main(void)
 	float film_distance = 1.0f;
 	float film_width = 1.0f;
 	float film_height = 1.0f;
-	float half_film_width = film_width / 2.0f;
-	float half_film_height = film_height / 2.0f;
+
+	if (image.get_width() > image.get_height())
+	{
+		film_width *= float(image.get_width()) / float(image.get_height());
+	}
+	if (image.get_height() > image.get_width())
+	{
+		film_height *= float(image.get_height()) / float(image.get_width());
+	}
+
+	float half_film_width  = 0.5f * film_width;
+	float half_film_height = 0.5f * film_height;
+
 	Vector3 film_center = camera_pos - film_distance * camera_z;
-	// TODO(max): aspect ration correction
-	
+
+	std::vector<std::shared_ptr<Material>> materials;
+	materials.push_back(std::make_shared<Material>(Vector3(0, 1, 1)));
+
+	Sphere s(Vector3(0, 0, 0), 2);
+	s.set_material(materials.at(0));
 
 	uint32_t *out = image.get_pixels();
 	for (int y = 0; y < image.get_height(); y++)
@@ -258,7 +266,7 @@ int main(void)
 			Vector3 ray_origin(camera_pos);
 			Vector3 ray_dir = (film_pos - ray_origin).normalize();
 
-			uint32_t color = unpack_vector3_to_argb(ray_trace(ray_origin, ray_dir));
+			uint32_t color = unpack_vector3_to_argb(ray_trace(s, ray_origin, ray_dir));
 
 			out[y * image.get_width() + x] = color;
 
