@@ -1,5 +1,7 @@
 
+# this will be a comment
 
+# I think that color should be specified in integer format (0-255)
 
 material1 : material
 {

@@ -12,22 +12,6 @@ std::ostream& operator<< (std::ostream& out, const Vector3& v)
 	return (out);
 }
 
-const Vector3 normalize(const Vector3& v)
-{
-	Vector3 result;
-
-	float len = v.length();
-	if (len != 0.0f)
-	{
-		float inv_len = 1.0f / len;
-		result.x = v.x * inv_len;
-		result.y = v.y * inv_len;
-		result.z = v.z * inv_len;
-	}
-
-	return (result);
-}
-
 const Vector3 operator* (float left, const Vector3& right)
 {
 	return Vector3(left * right.x, left * right.y, left * right.z);
@@ -43,18 +27,20 @@ float Vector3::length2() const
 	return (x * x + y * y + z * z);
 }
 
-Vector3& Vector3::normalize()
+const Vector3 Vector3::normalize() const
 {
+	Vector3 result;
+
 	float len = length();
-	if (len != 0)
+	if (len != 0.0f)
 	{
 		float inv_len = 1.0f / len;
-		x *= inv_len;
-		y *= inv_len;
-		z *= inv_len;
+		result.x = x * inv_len;
+		result.y = y * inv_len;
+		result.z = z * inv_len;
 	}
 
-	return (*this);
+	return (result);
 }
 
 float Vector3::dot(const Vector3& right) const

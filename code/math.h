@@ -10,7 +10,13 @@ struct Vector3
 			float y;
 			float z;
 		};
-		float e[3];
+		
+		struct
+		{
+			float r;
+			float g;
+			float b;
+		};
 	};
 
 	Vector3() : x(0), y(0), z(0) {}
@@ -33,7 +39,7 @@ struct Vector3
 
 	float length() const;
 	float length2() const;
-	Vector3& normalize();
+	const Vector3 normalize() const;
 	float dot(const Vector3& right) const;
 	const Vector3 hadamard(const Vector3& right) const;
 	const Vector3 cross(const Vector3& right) const;
