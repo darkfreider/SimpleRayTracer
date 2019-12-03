@@ -1,5 +1,7 @@
 #if !defined(MATH_H)
 
+// TODO(max): implement operator[]
+
 struct Vector3
 {
 	union
