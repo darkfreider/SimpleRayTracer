@@ -136,6 +136,9 @@ uint32_t unpack_vector3_to_argb(const Vector3& color)
 
 int main(void)
 {
+	//test_tokeniser();
+
+
 	Image32 image(1280, 720);
 
 
@@ -169,14 +172,11 @@ int main(void)
 	materials.push_back(new Material(Vector3(1, 1, 1)));
 
 	std::vector<Object *> objects;
-	objects.push_back(new Sphere(Vector3(0, 0, 0), 2));
-	objects.push_back(new Sphere(Vector3(0, 6, 0), 5));
-	objects.push_back(new Triangle(Vector3(0, 0, 0), Vector3(3, 0, 0), Vector3(2, 0, 1)));
-	//objects.push_back(new Triangle(Vector3(2, 0, 1), Vector3(3, 0, 0), Vector3(2, 0, 0)));
+	objects.push_back(new Sphere(Vector3(0, 2, 0), 1));
+	objects.push_back(new Triangle(Vector3(0, 0, 0), Vector3(1, 0, 0), Vector3(0, 0, 1)));
 
 	objects.at(0)->set_material(materials.at(0));
-	objects.at(1)->set_material(materials.at(1));
-	objects.at(2)->set_material(materials.at(2));
+	objects.at(1)->set_material(materials.at(2));
 
 	uint32_t *out = image.get_pixels();
 	for (int y = 0; y < image.get_height(); y++)
