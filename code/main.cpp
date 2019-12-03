@@ -1,120 +1,23 @@
 
 #include <iostream>
 #include <string>
-#include <stdint.h>
-#include <cmath>
 #include <vector>
 
-#include <memory>
+#include <cstdint>
+#include <cfloat>
+#include <cmath>
+#include <cassert>
+#include <cctype>
 
 #include "math.h"
+#include "geometry_builder.h"
+#include "material.h"
+#include "object.h"
 
 #include "math.cpp"
-
-class Material
-{
-	Vector3 color;
-
-public:
-	Material(const Vector3& c = Vector3(0, 0, 0)) : color(c) 
-	{
-		//std::cout << "Material created" << std::endl;
-	}
-
-	~Material() 
-	{
-		//std::cout << "Material destoyed" << std::endl;
-	}
-
-	const Vector3& get_color() const
-	{
-		return (color);
-	}
-};
-
-class Object
-{
-	Material *material;
-
-public:
-
-	Object() : material(0) { }
-
-	Object(Material *m) : material(m) 
-	{
-		//std::cout << "Object created" << std::endl;
-	}
-
-	~Object() {
-		//std::cout << "Object destoyed" << std::endl;
-	}
-
-	Material *get_material() const
-	{
-		return (material);
-	}
-
-	void set_material(Material *mat)
-	{
-		material = mat;
-	}
-
-	virtual bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const = 0;
-
-};
-
-// PERFORMANCE(max): precompute r*r and a*a
-class Sphere : public Object
-{
-	float m_radius;
-	Vector3 m_center;
-
-public:
-
-	Sphere(const Vector3& c, float r) : Object(), m_center(c), m_radius(r)
-	{
-		//std::cout << "Sphere created" << std::endl;
-	}
-
-	~Sphere()
-	{
-		//std::cout << "Sphere destoyed" << std::endl;
-	}
-
-	bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const
-	{
-		bool result = false;
-		const float tolerance = 0.0001f;
-
-		float t = ray_dir.dot(m_center - ray_orig);
-		Vector3 p = ray_orig + t * ray_dir;
-		float a = (m_center - p).length(); // PERFORMANCE(max) just compute length2()
-
-		if (a < m_radius)
-		{
-			result = true;
-			float b = sqrt(m_radius * m_radius - a * a);
-
-			float tn = t - b;
-			float tp = t + b;
-			if (tn > tolerance && tn < tp)
-			{
-				hit_t = tn;
-			}
-			else if (tp > tolerance)
-			{
-				hit_t = tp;
-			}
-			else
-			{
-				result = false;
-			}
-		}
-
-		return (result);
-	}
-};
-
+#include "material.cpp"
+#include "geometry_builder.cpp"
+#include "object.cpp"
 
 class Image32
 {
@@ -192,16 +95,28 @@ void Image32::write_image(const std::string& file_name) const
 	}
 }
 
-Vector3 ray_trace(const Object& obj, const Vector3& ray_origin, const Vector3& ray_dir)
+Vector3 ray_trace(const std::vector<Object *>& objects, const Vector3& ray_origin, const Vector3& ray_dir)
 {
 	Vector3 result = Vector3(0.2, 0, 0.8);
 
-	float t = 0.0f;
-	if (obj.intersect(ray_origin, ray_dir, t))
+	Object *obj = 0;
+	float t_min = FLT_MAX;
+	for (int i = 0; i < objects.size(); i++)
 	{
-		Material *mat = obj.get_material();
+		float t = 0.0f;
+		if (objects[i]->intersect(ray_origin, ray_dir, t))
+		{
+			if (t < t_min)
+			{
+				t_min = t;
+				obj = objects[i];
+			}
+		}
+	}
 
-		result = mat->get_color();
+	if (obj)
+	{
+		result = obj->get_material()->get_color();
 	}
 
 	return (result);
@@ -249,12 +164,15 @@ int main(void)
 	Vector3 film_center = camera_pos - film_distance * camera_z;
 
 	std::vector<Material *> materials;
-	materials.push_back(new Material(Vector3(1, 0, 0)));
+	materials.push_back(new Material(Vector3(1, 0, 1)));
+	materials.push_back(new Material(Vector3(0, 1, 0)));
 
 	std::vector<Object *> objects;
 	objects.push_back(new Sphere(Vector3(0, 0, 0), 2));
+	objects.push_back(new Sphere(Vector3(0, 6, 0), 5));
 
 	objects.at(0)->set_material(materials.at(0));
+	objects.at(1)->set_material(materials.at(1));
 
 	uint32_t *out = image.get_pixels();
 	for (int y = 0; y < image.get_height(); y++)
@@ -270,7 +188,7 @@ int main(void)
 			Vector3 ray_origin(camera_pos);
 			Vector3 ray_dir = (film_pos - ray_origin).normalize();
 
-			uint32_t color = unpack_vector3_to_argb(ray_trace(*objects.at(0), ray_origin, ray_dir));
+			uint32_t color = unpack_vector3_to_argb(ray_trace(objects, ray_origin, ray_dir));
 
 			out[y * image.get_width() + x] = color;
 
