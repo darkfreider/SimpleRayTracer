@@ -16,8 +16,9 @@
 
 #include "math.cpp"
 #include "material.cpp"
-#include "geometry_builder.cpp"
 #include "object.cpp"
+#include "tokeniser.cpp"
+#include "geometry_builder.cpp"
 
 class Image32
 {
@@ -136,7 +137,7 @@ uint32_t unpack_vector3_to_argb(const Vector3& color)
 
 int main(void)
 {
-	//test_tokeniser();
+	test_tokeniser();
 
 
 	Image32 image(1280, 720);
