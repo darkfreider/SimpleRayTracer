@@ -3,12 +3,19 @@
 
 # I think that color should be specified in integer format (0-255)
 
-material1 : material
+material : material1
 {
-	color = 64 247 202     # is it a better format for color definition?
+	Kd = 64 247 202     # is this a better format for color definition?
+	Ks = 0 168 23
+	fuzz = 0.25
+
+	<attribute> = <value> ;
+
+	<attribute> ::= <string>
+	<value>     ::= <int_list> | <int> | <float> | <string>
 }
 
-material2 : material
+material : material2
 {
 	color = .1 .1 .5;
 }
@@ -19,19 +26,15 @@ distant_light
 	direction = 0 1 0;
 }
 
+material : mat_metal
+{
+	Kd = 10 10 200;
+}
+
 spherical_light
 {
 	color = 1 1 1;
 	position = 0 0 10;
-}
-
-quad
-{
-	v0 = 0 0 0;
-	v1 = 1 0 0;
-	v3 = 1 1 0;
-	v4 = 0 1 0;
-	material = material1;
 }
 
 sphere

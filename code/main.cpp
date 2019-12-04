@@ -138,7 +138,11 @@ uint32_t unpack_vector3_to_argb(const Vector3& color)
 int main(void)
 {
 	Geometry_builder builder;
-	builder.generate_geometry("material : red_mat { color = 255 0 0; }");
+
+	std::string src;
+	src += "material : red_mat { color = 255 0 0; }";
+	src += "sphere { position = 0; radius = 2; material = red_mat; }";
+	builder.generate_geometry(src);
 
 
 	Image32 image(1280, 720);

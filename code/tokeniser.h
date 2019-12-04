@@ -104,7 +104,12 @@ public:
 	Token& get_token()
 	{
 		// QUESTION(max): maybe check for end of token stream and always return TOKEN_EOF if there is no more tokens left
-		return m_tokens.at(m_current_token++);
+		return m_tokens.at(m_current_token);
+	}
+
+	void advance_token()
+	{
+		m_current_token++;
 	}
 
 	void generate_tokens(const std::string &s);
@@ -115,6 +120,8 @@ private:
 
 	void next_token(void);
 };
+
+void test_tokeniser();
 
 #define _TOKENISER_H
 #endif
