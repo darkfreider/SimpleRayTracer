@@ -10,11 +10,15 @@
 
 #include "tokeniser.h"
 #include "material.h"
+#include "object.h"
 
 class Geometry_builder
 {
 	Tokeniser m_tokeniser;
-	std::unordered_map<std::string, Material*> material_table; // QUESTION(max): do I need to store <string, Material*> or <string, Material>?
+	std::unordered_map<std::string, Material*> m_material_table; // QUESTION(max): do I need to store <string, Material*> or <string, Material>?
+
+	std::vector<Material *> m_materials;
+	std::vector<Object *> m_objects;
 
 	// QUESTION(max)
 	// Scene shoud be represented as:
@@ -37,6 +41,11 @@ public:
 	}
 
 	void generate_geometry(const std::string& geometry_descr);
+
+	const std::vector<Object *>& get_objects()
+	{
+		return (m_objects);
+	}
 
 private:
 

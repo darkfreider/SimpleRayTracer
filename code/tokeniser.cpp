@@ -19,11 +19,6 @@ void Tokeniser::generate_tokens(const std::string &s)
 	m_tokens.push_back(Token(TOKEN_EOF));
 }
 
-std::vector<Tokeniser::Token> Tokeniser::get_tokens()
-{
-	return m_tokens;
-}
-
 void Tokeniser::print_tokens()
 {
 	for (uint32_t i = 0; i < m_tokens.size(); i++)

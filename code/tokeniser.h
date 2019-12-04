@@ -9,6 +9,7 @@
 
 class Tokeniser
 {
+public:
 	typedef enum Token_kind
 	{
 		TOKEN_EOF = 0,
@@ -51,21 +52,46 @@ class Tokeniser
 			}
 		}
 
+		Token& operator=(const Token& rhs)
+		{
+			if (this == &rhs)
+				return (*this);
+
+			kind = rhs.kind;
+			if (kind == TOKEN_FLOAT)
+			{
+				float_val = rhs.float_val;
+			}
+			else if (kind == TOKEN_INT)
+			{
+				int_val = rhs.int_val;
+			}
+			else if (kind == TOKEN_NAME)
+			{
+				str_val = rhs.str_val;
+			}
+
+			return (*this);
+		}
+
 		~Token()
 		{
 
 		}
 	};
 
+private:
+
 	uint32_t current_char;
 	std::string src;
 
 	Token m_token;
 	std::vector<Token> m_tokens;
+	uint32_t m_current_token;
 
 public:
 
-	Tokeniser() : current_char(0)
+	Tokeniser() : current_char(0), m_current_token(0)
 	{
 
 	}
@@ -75,9 +101,14 @@ public:
 
 	}
 
+	Token& get_token()
+	{
+		// QUESTION(max): maybe check for end of token stream and always return TOKEN_EOF if there is no more tokens left
+		return m_tokens.at(m_current_token++);
+	}
+
 	void generate_tokens(const std::string &s);
 
-	std::vector<Token> get_tokens();
 	void print_tokens();
 
 private:

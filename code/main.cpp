@@ -22,7 +22,7 @@
 
 class Image32
 {
-	// packing srtucture is IMPORTANT
+	// NOTE(max): packing srtucture is IMPORTANT
 #pragma pack(push, 1)
 	struct Bitmap_header
 	{
@@ -137,7 +137,8 @@ uint32_t unpack_vector3_to_argb(const Vector3& color)
 
 int main(void)
 {
-	test_tokeniser();
+	Geometry_builder builder;
+	builder.generate_geometry("material : red_mat { color = 255 0 0; }");
 
 
 	Image32 image(1280, 720);
