@@ -3,6 +3,11 @@
 
 # I think that color should be specified in integer format (0-255)
 
+camera
+{
+	# camera attributes
+}
+
 material : material1
 {
 	Kd = 64 247 202     # is this a better format for color definition?

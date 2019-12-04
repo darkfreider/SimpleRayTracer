@@ -73,27 +73,56 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 	// mat
 	expect_token(Tokeniser::Token_kind('{'));
 
+	// TODO(max): use this value to check that all the parameters of the sphere are initialised
+	bool position_inited = false;
+	bool radius_inited = false;
+	bool material_inited = false;
+
 	while (!match_token(Tokeniser::Token_kind('}')))
 	{
 		if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
 		{
 			if (match_token_str("radius"))
 			{
+				// TODO(max):
 				expect_token(Tokeniser::Token_kind('='));
 			}
 			else if (match_token_str("position"))
 			{
+				// TODO(max):
 				expect_token(Tokeniser::Token_kind('='));
 			}
 			else if (match_token_str("material"))
 			{
 				expect_token(Tokeniser::Token_kind('='));
+
+				if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
+				{
+					auto entry = m_material_table.find(m_tokeniser.get_token().str_val);
+					expect_token(Tokeniser::Token_kind::TOKEN_NAME);
+					if (material != m_material_table.end())
+					{
+						s->set_material(entry->second);
+					}
+					else
+					{
+						// TODO(max): proper syntax error handling
+						assert(0);
+					}
+				}
+				else
+				{
+					// TODO(max): proper syntax error handling
+					assert(0);
+				}
 			}
 			else
 			{
 				// TODO(max): proper syntax error handling
 				assert(0);
 			}
+
+			expect_token(Tokeniser::Token_kind(';'));
 		}
 		else
 		{
