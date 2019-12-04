@@ -93,6 +93,11 @@ sphere
 			definition definitions
 		}
 	}
+
+	keyword [: name]?
+	{
+		type specific definitions
+	}
 */
 
 

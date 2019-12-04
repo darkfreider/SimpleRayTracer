@@ -36,7 +36,6 @@ bool Sphere::intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& h
 
 bool Triangle::intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const
 {
-	// TODO(max): make it properly!!!!
 	bool result = false;
 	const float tolerance = 0.0001f;
 
@@ -46,23 +45,27 @@ bool Triangle::intersect(const Vector3& ray_orig, const Vector3& ray_dir, float&
 
 	Vector3 w = m_vertecies[0] - ray_orig;
 
-	float t = w.dot(n) / ray_dir.dot(n);
-	if (t > tolerance)
+	float d = ray_dir.dot(n);
+	if (d != 0.0f)
 	{
-		Vector3 intersection_p = ray_orig + t * ray_dir;
-
-		Vector3 edge0 = m_vertecies[1] - m_vertecies[0];
-		Vector3 edge1 = m_vertecies[2] - m_vertecies[1];
-		Vector3 edge2 = m_vertecies[0] - m_vertecies[2];
-
-		float k0 = edge0.cross(intersection_p - m_vertecies[0]).dot(n);
-		float k1 = edge1.cross(intersection_p - m_vertecies[1]).dot(n);
-		float k2 = edge2.cross(intersection_p - m_vertecies[2]).dot(n);
-
-		if (k0 > 0.0f && k1 > 0.0f && k2 > 0.0f)
+		float t = w.dot(n) / d;
+		if (t > tolerance)
 		{
-			hit_t = t;
-			result = true;
+			Vector3 intersection_p = ray_orig + t * ray_dir;
+
+			Vector3 edge0 = m_vertecies[1] - m_vertecies[0];
+			Vector3 edge1 = m_vertecies[2] - m_vertecies[1];
+			Vector3 edge2 = m_vertecies[0] - m_vertecies[2];
+
+			float k0 = edge0.cross(intersection_p - m_vertecies[0]).dot(n);
+			float k1 = edge1.cross(intersection_p - m_vertecies[1]).dot(n);
+			float k2 = edge2.cross(intersection_p - m_vertecies[2]).dot(n);
+
+			if (k0 > 0.0f && k1 > 0.0f && k2 > 0.0f)
+			{
+				hit_t = t;
+				result = true;
+			}
 		}
 	}
 
