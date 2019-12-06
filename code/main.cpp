@@ -159,11 +159,13 @@ std::string get_file_contents(const char *file_name)
 	return (contents);
 }
 
+
+
 int main(int argc, char *argv[])
 {
 	if (argc != 2)
 	{
-		std::cerr << "usage: <main> gscript.txt" << std::endl;
+		std::cerr << "usage: <exe_name> <gscript.txt>" << std::endl;
 	}
 
 	Geometry_builder builder;
@@ -223,24 +225,3 @@ int main(int argc, char *argv[])
 
 	return (0);
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

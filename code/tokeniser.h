@@ -7,6 +7,8 @@
 #include <string>
 #include <cassert>
 
+// QUESTION(max): Do I store line_number inside a token?
+
 class Tokeniser
 {
 public:
@@ -29,6 +31,7 @@ public:
 			float float_val;
 		};
 		std::string str_val;
+		uint32_t line_number;
 
 		explicit Token(Token_kind k = TOKEN_EOF) : kind(k)
 		{
@@ -89,9 +92,11 @@ private:
 	std::vector<Token> m_tokens;
 	uint32_t m_current_token;
 
+	uint32_t m_line_number;
+
 public:
 
-	Tokeniser() : current_char(0), m_current_token(0)
+	Tokeniser() : current_char(0), m_current_token(0), m_line_number(1)
 	{
 
 	}

@@ -19,7 +19,7 @@ material : green_mat
 sphere
 {
 	position = 0. 0. 0.;
-	radius = 3.;
+	radius = 0.5;
 	material = green_mat;
 }
 

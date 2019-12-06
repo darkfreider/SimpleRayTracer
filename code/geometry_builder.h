@@ -43,6 +43,9 @@ public:
 	}
 
 private:
+
+	void syntax_error(const std::string& message);
+
 	bool is_token(Tokeniser::Token_kind kind);
 	bool expect_token(Tokeniser::Token_kind kind);
 	bool match_token(Tokeniser::Token_kind kind);

@@ -1,15 +1,24 @@
 
 
 #include <iostream>
-#include <cctype>
 #include <vector>
 #include <string>
-#include <cassert>
 #include <unordered_map>
+
+#include <cctype>
+#include <cassert>
+#include <cstdlib>
 
 #include "tokeniser.h"
 #include "material.h"
 #include "object.h"
+
+
+void Geometry_builder::syntax_error(const std::string& message)
+{
+	std::cerr << "Syntas error: " << message << "at line " << m_tokeniser.get_token().line_number << std::endl;
+	std::exit(1234);
+}
 
 bool Geometry_builder::is_token(Tokeniser::Token_kind kind)
 {
@@ -25,8 +34,7 @@ bool Geometry_builder::expect_token(Tokeniser::Token_kind kind)
 {
 	if (m_tokeniser.get_token().kind != kind)
 	{
-		// TODO(max): proper syntax error handling
-		assert(0);
+		std::cerr << "Unexpected token (?)" << "at line " << m_tokeniser.get_token().line_number << std::endl;
 	}
 
 	m_tokeniser.advance_token();
@@ -70,8 +78,6 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 {
 	expect_token(Tokeniser::Token_kind('{'));
 
-	// TODO(max): use this value to check that all the parameters of the sphere are initialised
-	//            and that params are not inited more then once
 	bool position_inited = false;
 	bool radius_inited = false;
 	bool material_inited = false;
@@ -82,29 +88,33 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 		{
 			if (match_token_str("radius"))
 			{
-				expect_token(Tokeniser::Token_kind('='));
+				if (radius_inited)
+				{
+					syntax_error("Sphere's radius redefinition");
+				}
 
+				expect_token(Tokeniser::Token_kind('='));
 				if (is_token(Tokeniser::Token_kind::TOKEN_FLOAT))
 				{
 					float flt_val = m_tokeniser.get_token().float_val;
-					if (flt_val < 0.0f)
-					{
-						// TODO(max): proper syntax error handling
-						assert(0);
-					}
 					expect_token(Tokeniser::Token_kind::TOKEN_FLOAT);
 					s->set_radius(flt_val);
+
+					radius_inited = true;
 				}
 				else
 				{
-					// TODO(max): proper syntax error handling
-					assert(0);
+					syntax_error("Expected Token_kind::TOKEN_FLOAT");
 				}
 			}
 			else if (match_token_str("position"))
 			{
-				expect_token(Tokeniser::Token_kind('='));
+				if (position_inited)
+				{
+					syntax_error("Sphere's position redefinition");
+				}
 
+				expect_token(Tokeniser::Token_kind('='));
 				Vector3 pos_value;
 				for (int i = 0; i < 3; i++)
 				{
@@ -122,15 +132,19 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 					}
 					else
 					{
-						// TODO(max): proper syntax error handling
-						assert(0);
+						syntax_error("Expected Token_kind::TOKEN_FLOAT");
 					}
 				}
 
 				s->set_position(pos_value);
+				position_inited = true;
 			}
 			else if (match_token_str("material"))
 			{
+				if (material_inited)
+				{
+					syntax_error("Sphere's material redefinition");
+				}
 				// TODO(max): abstract this in a function and use it within a triangle
 				expect_token(Tokeniser::Token_kind('='));
 
@@ -141,32 +155,35 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 					if (entry != m_material_table.end())
 					{
 						s->set_material(entry->second);
+						material_inited = true;
 					}
 					else
 					{
-						// TODO(max): proper syntax error handling
-						assert(0);
+						syntax_error("Undefined material name");
 					}
 				}
 				else
 				{
-					// TODO(max): proper syntax error handling
-					assert(0);
+					syntax_error("Expected material name");
 				}
 			}
 			else
 			{
-				// TODO(max): proper syntax error handling
-				assert(0);
+				syntax_error("Unknown sphere attribute");
 			}
 
 			expect_token(Tokeniser::Token_kind(';'));
 		}
 		else
 		{
-			// TODO(max): proper syntax error handling
-			assert(0);
+			syntax_error("Expected material attribute name");
 		}
+	}
+
+	// TODO(max): generate an error for each attribute
+	if (!material_inited || !position_inited || !radius_inited)
+	{
+		syntax_error("Not all sphere attributes are initialised");
 	}
 }
 
@@ -179,6 +196,7 @@ void Geometry_builder::sphere_definition()
 
 void Geometry_builder::init_material_attributes(Material *mat)
 {
+	// TODO(max): check for all attributes to be inited
 	expect_token(Tokeniser::Token_kind('{'));
 
 	while (!match_token(Tokeniser::Token_kind('}')))
@@ -198,15 +216,13 @@ void Geometry_builder::init_material_attributes(Material *mat)
 						rgb[i] = m_tokeniser.get_token().int_val;
 						if (rgb[i] > 255)
 						{
-							// TODO(max): proper syntax error handling
-							assert(0);
+							syntax_error("Expected color value in range 0-255");
 						}
 						expect_token(Tokeniser::Token_kind::TOKEN_INT);
 					}
 					else
 					{
-						// TODO(max): proper syntax error handling
-						assert(0);
+						syntax_error("Expected Token_kind::TOKEN_INT");
 					}
 				}
 
@@ -217,17 +233,14 @@ void Geometry_builder::init_material_attributes(Material *mat)
 			}
 			else
 			{
-				// TODO(max): proper syntax error handling
-				// unknown attribute
-				assert(0);
+				syntax_error("Unknown material attribute");
 			}
 
 			expect_token(Tokeniser::Token_kind(';'));
 		}
 		else
 		{
-			// TODO(max): proper syntax error handling
-			assert(0);
+			syntax_error("Expected material attribute name");
 		}
 	}
 }
@@ -238,9 +251,6 @@ void Geometry_builder::material_definition()
 
 	if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
 	{
-		// save name of the material
-		// check if a material with such a name already exists
-
 		std::string mat_name(m_tokeniser.get_token().str_val);
 		expect_token(Tokeniser::Token_kind::TOKEN_NAME);
 		if (m_material_table.find(mat_name) == m_material_table.end())
@@ -253,15 +263,12 @@ void Geometry_builder::material_definition()
 		}
 		else
 		{
-			std::cout << "ERROR: \"material : " << mat_name << "\" already exists" << std::endl;
-			// TODO(max): proper syntax error handling
-			assert(0);
+			syntax_error("Redefinition of material");
 		}
 	}
 	else
 	{
-		// TODO(max): proper syntax error handling
-		assert(0);
+		syntax_error("Expected material name");
 	}
 }
 
@@ -289,14 +296,12 @@ void Geometry_builder::definition()
 		}
 		else
 		{
-			// TODO(max): proper syntax error handling
-			assert(0);
+			syntax_error("Trying to define unknown type of object");
 		}
 	}
 	else
 	{
-		// TODO(max): proper syntax error handling
-		assert(0);
+		syntax_error("Expected Token_kind::TOKEN_NAME in object definition");
 	}
 }
 

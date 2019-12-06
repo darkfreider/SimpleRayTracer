@@ -27,27 +27,27 @@ void Tokeniser::print_tokens()
 		{
 			case TOKEN_NAME:
 			{
-				std::cout << "TOKEN_NAME: " << m_tokens[i].str_val << std::endl;
+				std::cout << "TOKEN_NAME: " << m_tokens[i].str_val << " ln: " << m_tokens[i].line_number << std::endl;
 			} break;
 
 			case TOKEN_INT:
 			{
-				std::cout << "TOKEN_INT: " << m_tokens[i].int_val << std::endl;
+				std::cout << "TOKEN_INT: " << m_tokens[i].int_val << " ln: " << m_tokens[i].line_number << std::endl;
 			} break;
 
 			case TOKEN_FLOAT:
 			{
-				std::cout << "TOKEN_FLOAT: " << m_tokens[i].float_val << std::endl;
+				std::cout << "TOKEN_FLOAT: " << m_tokens[i].float_val << " ln: " << m_tokens[i].line_number << std::endl;
 			} break;
 
 			case TOKEN_EOF:
 			{
-				std::cout << "TOKEN_EOF" << std::endl;
+				std::cout << "TOKEN_EOF" << " ln: " << m_tokens[i].line_number << std::endl;
 			};
 
 			default:
 			{
-				std::cout << (unsigned char)m_tokens[i].kind << std::endl;
+				std::cout << (unsigned char)m_tokens[i].kind << " ln: " << m_tokens[i].line_number << std::endl;
 			} break;
 		}
 	}
@@ -76,8 +76,7 @@ void Tokeniser::tokenise_float_val()
 	m_token.float_val = std::stof(src.substr(current_char), &sz);
 	if (sz == 0)
 	{
-		// error
-		assert(0);
+		std::cerr << "Unable to read float value" << std::endl;
 	}
 	current_char += sz;
 	m_tokens.push_back(m_token);
@@ -87,8 +86,13 @@ void Tokeniser::next_token(void)
 {
 	while (isspace(src[current_char]))
 	{
+		if (src[current_char] == '\n')
+		{
+			m_line_number++;
+		}
 		current_char++;
 	}
+	m_token.line_number = m_line_number;
 
 	switch (src[current_char])
 	{
