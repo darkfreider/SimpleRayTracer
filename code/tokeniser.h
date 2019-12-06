@@ -118,7 +118,9 @@ public:
 
 private:
 
-	void next_token(void);
+	void next_token();
+	void tokenise_int_val();
+	void tokenise_float_val();
 };
 
 void test_tokeniser();

@@ -141,7 +141,7 @@ int main(void)
 
 	std::string src;
 	src += "material : red_mat { color = 255 0 0; }";
-	src += "sphere { position = 0.0 0.0 0.0; radius = 1.5; material = red_mat; }";
+	src += "sphere { position = 12.56 1.0 0.148; radius = 1.5; material = red_mat; }";
 	builder.generate_geometry(src);
 
 

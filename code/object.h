@@ -43,7 +43,7 @@ class Sphere : public Object
 
 public:
 
-	Sphere(const Vector3& c, float r) : Object(), m_center(c), m_radius(r)
+	Sphere(const Vector3& c = Vector3(), float r = 0.0f) : Object(), m_center(c), m_radius(r)
 	{
 		
 	}
@@ -51,6 +51,16 @@ public:
 	~Sphere()
 	{
 		
+	}
+
+	void set_radius(float f)
+	{
+		m_radius = f;
+	}
+
+	void set_position(const Vector3& p)
+	{
+		m_center = p;
 	}
 
 	bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const;
@@ -62,7 +72,7 @@ class Triangle : public Object
 
 public:
 
-	Triangle(const Vector3& v0, const Vector3& v1, const Vector3& v2) : Object()
+	Triangle(const Vector3& v0 = Vector3(), const Vector3& v1 = Vector3(), const Vector3& v2 = Vector3()) : Object()
 	{
 		m_vertecies[0] = v0;
 		m_vertecies[1] = v1;

@@ -37,8 +37,7 @@ void Tokeniser::print_tokens()
 
 			case TOKEN_FLOAT:
 			{
-				// TODO(max): implement float recognistion
-				assert(0);
+				std::cout << "TOKEN_FLOAT: " << m_tokens[i].float_val << std::endl;
 			} break;
 
 			case TOKEN_EOF:
@@ -53,6 +52,37 @@ void Tokeniser::print_tokens()
 		}
 	}
 }
+
+void Tokeniser::tokenise_int_val()
+{
+	// TODO(max): check for overflow
+	m_token.kind = TOKEN_INT;
+	m_token.int_val = 0;
+	while (isdigit(src[current_char]))
+	{
+		m_token.int_val *= 10;
+		m_token.int_val += src[current_char] - '0';
+		current_char++;
+	}
+
+	m_tokens.push_back(m_token);
+}
+
+void Tokeniser::tokenise_float_val()
+{
+	m_token.kind = TOKEN_FLOAT;
+
+	std::string::size_type sz = 0;
+	m_token.float_val = std::stof(src.substr(current_char), &sz);
+	if (sz == 0)
+	{
+		// error
+		assert(0);
+	}
+	current_char += sz;
+	m_tokens.push_back(m_token);
+}
+
 void Tokeniser::next_token(void)
 {
 	while (isspace(src[current_char]))
@@ -64,17 +94,22 @@ void Tokeniser::next_token(void)
 	{
 		case '0': case '1': case '2': case '3': case '4': case '5': case '6': case '7': case '8': case '9':
 		{
-			// TODO(max): check for overflow
-			m_token.kind = TOKEN_INT;
-			m_token.int_val = 0;
+			uint32_t book_mark = current_char;
 			while (isdigit(src[current_char]))
 			{
-				m_token.int_val *= 10;
-				m_token.int_val += src[current_char] - '0';
 				current_char++;
 			}
 
-			m_tokens.push_back(m_token);
+			if (src[current_char] == '.')
+			{
+				current_char = book_mark;
+				tokenise_float_val();
+			}
+			else
+			{
+				current_char = book_mark;
+				tokenise_int_val();
+			}
 		} break;
 
 		case 'A': case 'B': case 'C': case 'D': case 'E': case 'F': case 'G': case 'H': case 'I': case 'J':

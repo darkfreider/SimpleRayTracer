@@ -19,6 +19,8 @@ struct Vector3
 			float g;
 			float b;
 		};
+
+		float e[3];
 	};
 
 	Vector3() : x(0), y(0), z(0) {}
@@ -38,6 +40,9 @@ struct Vector3
 	Vector3& operator-= (const Vector3& right);
 	Vector3& operator*= (float right);
 	Vector3& operator/= (float right);
+
+	float operator[] (int i) const;
+	float& operator[] (int i);
 
 	float length() const;
 	float length2() const;

@@ -12,6 +12,16 @@ std::ostream& operator<< (std::ostream& out, const Vector3& v)
 	return (out);
 }
 
+float Vector3::operator[] (int i) const
+{
+	return e[i];
+}
+
+float& Vector3::operator[] (int i)
+{
+	return e[i];
+}
+
 const Vector3 operator* (float left, const Vector3& right)
 {
 	return Vector3(left * right.x, left * right.y, left * right.z);

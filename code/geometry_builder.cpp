@@ -86,21 +86,51 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 			{
 				// TODO(max):
 				expect_token(Tokeniser::Token_kind('='));
+
+				if (is_token(Tokeniser::Token_kind::TOKEN_FLOAT))
+				{
+					float flt_val = m_tokeniser.get_token().float_val;
+					expect_token(Tokeniser::Token_kind::TOKEN_FLOAT);
+					s->set_radius(flt_val);
+				}
+				else
+				{
+					// TODO(max): proper syntax error handling
+					assert(0);
+				}
 			}
 			else if (match_token_str("position"))
 			{
-				// TODO(max):
+				// TODO(max): DOOOOO THIS
 				expect_token(Tokeniser::Token_kind('='));
+
+				Vector3 pos_value;
+				for (int i = 0; i < 3; i++)
+				{
+					if (is_token(Tokeniser::Token_kind::TOKEN_FLOAT))
+					{
+						pos_value[i] = m_tokeniser.get_token().float_val;
+						expect_token(Tokeniser::Token_kind::TOKEN_FLOAT);
+					}
+					else
+					{
+						// TODO(max): proper syntax error handling
+						assert(0);
+					}
+				}
+
+				s->set_position(pos_value);
 			}
 			else if (match_token_str("material"))
 			{
+				// TODO(max): abstract this in a function and use it within a triangle
 				expect_token(Tokeniser::Token_kind('='));
 
 				if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
 				{
 					auto entry = m_material_table.find(m_tokeniser.get_token().str_val);
 					expect_token(Tokeniser::Token_kind::TOKEN_NAME);
-					if (material != m_material_table.end())
+					if (entry != m_material_table.end())
 					{
 						s->set_material(entry->second);
 					}
@@ -134,8 +164,9 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 
 void Geometry_builder::sphere_definition()
 {
-	m_objects.push_back(new Sphere());
-	init_sphere_attributes(m_objects.back());
+	Sphere *s = new Sphere();
+	m_objects.push_back(s);
+	init_sphere_attributes(s);
 }
 
 void Geometry_builder::init_material_attributes(Material *mat)
@@ -261,6 +292,7 @@ void Geometry_builder::definition()
 void Geometry_builder::generate_geometry(const std::string& geometry_descr)
 {
 	m_tokeniser.generate_tokens(geometry_descr);
+	m_tokeniser.print_tokens();
 
 	while (!match_token(Tokeniser::Token_kind::TOKEN_EOF))
 	{
