@@ -12,7 +12,7 @@ void Tokeniser::generate_tokens(const std::string &s)
 	src = s;
 
 	next_token();
-	while (current_char != src.length())
+	while (current_char < src.length())
 	{
 		next_token();
 	}

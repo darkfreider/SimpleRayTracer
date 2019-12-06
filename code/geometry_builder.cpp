@@ -68,12 +68,10 @@ bool Geometry_builder::match_token_str(const std::string& str_val)
 
 void Geometry_builder::init_sphere_attributes(Sphere *s)
 {
-	// pos
-	// r
-	// mat
 	expect_token(Tokeniser::Token_kind('{'));
 
 	// TODO(max): use this value to check that all the parameters of the sphere are initialised
+	//            and that params are not inited more then once
 	bool position_inited = false;
 	bool radius_inited = false;
 	bool material_inited = false;
@@ -84,12 +82,16 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 		{
 			if (match_token_str("radius"))
 			{
-				// TODO(max):
 				expect_token(Tokeniser::Token_kind('='));
 
 				if (is_token(Tokeniser::Token_kind::TOKEN_FLOAT))
 				{
 					float flt_val = m_tokeniser.get_token().float_val;
+					if (flt_val < 0.0f)
+					{
+						// TODO(max): proper syntax error handling
+						assert(0);
+					}
 					expect_token(Tokeniser::Token_kind::TOKEN_FLOAT);
 					s->set_radius(flt_val);
 				}
@@ -101,15 +103,21 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 			}
 			else if (match_token_str("position"))
 			{
-				// TODO(max): DOOOOO THIS
 				expect_token(Tokeniser::Token_kind('='));
 
 				Vector3 pos_value;
 				for (int i = 0; i < 3; i++)
 				{
+					bool need_negate = false;
+					if (match_token(Tokeniser::Token_kind('-')))
+					{
+						need_negate = true;
+					}
+
 					if (is_token(Tokeniser::Token_kind::TOKEN_FLOAT))
 					{
 						pos_value[i] = m_tokeniser.get_token().float_val;
+						pos_value[i] = (need_negate) ? -pos_value[i] : pos_value[i];
 						expect_token(Tokeniser::Token_kind::TOKEN_FLOAT);
 					}
 					else
@@ -259,9 +267,6 @@ void Geometry_builder::material_definition()
 
 void Geometry_builder::definition()
 {
-	// objects
-	// materials
-	// lights
 	if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
 	{
 		if (match_token_str("material"))
@@ -275,6 +280,12 @@ void Geometry_builder::definition()
 		else if (match_token_str("triangle"))
 		{
 			// TODO(max): Implement it !!!!!!
+			assert(0);
+		}
+		else if (match_token_str("light"))
+		{
+			// TODO(max): Implement it !!!!!!
+			assert(0);
 		}
 		else
 		{
@@ -292,7 +303,6 @@ void Geometry_builder::definition()
 void Geometry_builder::generate_geometry(const std::string& geometry_descr)
 {
 	m_tokeniser.generate_tokens(geometry_descr);
-	m_tokeniser.print_tokens();
 
 	while (!match_token(Tokeniser::Token_kind::TOKEN_EOF))
 	{

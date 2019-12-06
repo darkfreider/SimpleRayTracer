@@ -3,126 +3,36 @@
 
 # I think that color should be specified in integer format (0-255)
 
-camera
+# geometry objects and lights are anonimous
+# materials need names
+
+material : red_mat
 {
-	# camera attributes
+	color = 222 33 62;
 }
 
-material : material1
+material : green_mat
 {
-	Kd = 64 247 202     # is this a better format for color definition?
-	Ks = 0 168 23
-	fuzz = 0.25
-
-	<attribute> = <value> ;
-
-	<attribute> ::= <string>
-	<value>     ::= <int_list> | <int> | <float> | <string>
-}
-
-material : material2
-{
-	color = .1 .1 .5;
-}
-
-distant_light
-{
-	color = 1 1 1;
-	direction = 0 1 0;
-}
-
-material : mat_metal
-{
-	Kd = 10 10 200;
-}
-
-spherical_light
-{
-	color = 1 1 1;
-	position = 0 0 10;
+	color = 3 252 165;
 }
 
 sphere
 {
-	position = 0 0 0;
-	radius = 3;
-	
-	material = material2;
+	position = 0. 0. 0.;
+	radius = 3.;
+	material = green_mat;
 }
 
+sphere
+{
+	position = 5. 5. 3.;
+	radius = 1.5;
+	material = red_mat;
+}
 
-/*
-	TOKENS_KIND:
-		id
-		int
-		float
-		:
-		;
-		=
-		{
-		}
-
-	KEY_WORDS:
-		material
-
-		distant_light
-		spherical_light
-
-		sphere
-		quad
-*/
-
-# geometry objects and lights are anonimous
-# materials need names
-
-/*
-	
-	geomerty_object_type 
-	{
-		definition definitions
-	}
-
-	light_type
-	{
-		definition definitions
-	}
-
-
-	{
-		material_name : material
-		{
-			definition definitions
-		}
-
-		OR
-
-		material : material_name
-		{
-			definition definitions
-		}
-	}
-
-	keyword [: name]?
-	{
-		type specific definitions
-	}
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+sphere
+{
+	material = red_mat;
+	radius = 0.5;
+	position = -6. -4. 0.;
+}

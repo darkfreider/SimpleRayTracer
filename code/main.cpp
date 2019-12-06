@@ -1,8 +1,11 @@
 
 #include <iostream>
+#include <fstream>
 #include <string>
 #include <vector>
 
+
+#include <cstdlib>
 #include <cstdint>
 #include <cfloat>
 #include <cmath>
@@ -135,19 +138,40 @@ uint32_t unpack_vector3_to_argb(const Vector3& color)
 	return (result);
 }
 
-int main(void)
+std::string get_file_contents(const char *file_name)
 {
+	std::ifstream in(file_name, std::ios::in | std::ios::binary);
+	std::string contents;
+	if (in)
+	{
+		in.seekg(0, std::ios::end);
+		contents.resize(in.tellg());
+		in.seekg(0, std::ios::beg);
+		in.read(&contents[0], contents.size());
+		in.close();
+	}
+	else
+	{
+		std::cerr << "ERROR: can't open file" << std::endl;
+		std::exit(1);
+	}
+
+	return (contents);
+}
+
+int main(int argc, char *argv[])
+{
+	if (argc != 2)
+	{
+		std::cerr << "usage: <main> gscript.txt" << std::endl;
+	}
+
 	Geometry_builder builder;
-
-	std::string src;
-	src += "material : red_mat { color = 255 0 0; }";
-	src += "sphere { position = 12.56 1.0 0.148; radius = 1.5; material = red_mat; }";
-	builder.generate_geometry(src);
-
+	builder.generate_geometry(get_file_contents(argv[1]));
 
 	Image32 image(1280, 720);
 
-
+	// TODO(max): make a camera abstraction
 	Vector3 camera_pos(0, -15, 6);
 	Vector3 camera_z = camera_pos.normalize(); // look at (0, 0, 0)
 	Vector3 camera_x = Vector3(0, 0, 1).cross(camera_z).normalize();
@@ -171,35 +195,6 @@ int main(void)
 
 	Vector3 film_center = camera_pos - film_distance * camera_z;
 
-	std::vector<Material *> materials;
-	materials.push_back(new Material(Vector3(1, 0, 1)));
-	materials.push_back(new Material(Vector3(0, 1, 0)));
-	materials.push_back(new Material(Vector3(1, 1, 1)));
-	materials.push_back(new Material(Vector3(1, 0, 0)));
-	materials.push_back(new Material(Vector3(1, 1, 0)));
-
-	std::vector<Object *> objects;
-	objects.push_back(new Sphere(Vector3(0, 0, 0), 1));
-	objects.push_back(new Sphere(Vector3(-3, 3, 0.5), 1.5));
-
-	// Two lovely triangles :=)
-	objects.push_back(new Triangle(Vector3(-5, -5, 0), Vector3(5, 5, 0), Vector3(5, -5, 0)));
-	objects.push_back(new Triangle(Vector3(-5, -5, 0), Vector3(5, 5, 0), Vector3(-5, 5, 0)));
-	objects.push_back(new Triangle(Vector3(-5, -5, 0), Vector3(-5, 5, 0), Vector3(-5, 5, 5)));
-	objects.push_back(new Triangle(Vector3(5, 5, 0), Vector3(5, -5, 0), Vector3(5, 5, 5)));
-
-	objects.push_back(new Triangle(Vector3(-5, 5, 0), Vector3(5, 5, 0), Vector3(5, 5, 2)));
-	objects.push_back(new Triangle(Vector3(-5, 5, 0), Vector3(-5, 5, 2), Vector3(5, 5, 2)));
-
-	objects.at(0)->set_material(materials.at(0));
-	objects.at(1)->set_material(materials.at(1));
-	objects.at(2)->set_material(materials.at(2));
-	objects.at(3)->set_material(materials.at(2));
-	objects.at(4)->set_material(materials.at(1));
-	objects.at(5)->set_material(materials.at(1));
-
-	objects.at(6)->set_material(materials.at(3));
-	objects.at(7)->set_material(materials.at(4));
 
 	uint32_t *out = image.get_pixels();
 	for (int y = 0; y < image.get_height(); y++)
@@ -215,7 +210,7 @@ int main(void)
 			Vector3 ray_origin(camera_pos);
 			Vector3 ray_dir = (film_pos - ray_origin).normalize();
 
-			uint32_t color = unpack_vector3_to_argb(ray_trace(objects, ray_origin, ray_dir));
+			uint32_t color = unpack_vector3_to_argb(ray_trace(builder.get_objects(), ray_origin, ray_dir));
 
 			out[y * image.get_width() + x] = color;
 
