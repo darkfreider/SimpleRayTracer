@@ -9,6 +9,11 @@
 # need global variables structure with differend fields
 # like screen resolution, background color ...
 
+material : default_mat
+{
+	color = 255 255 255;
+}
+
 material : red_mat
 {
 	color = 222 33 62;
@@ -26,16 +31,9 @@ material : yellow
 
 sphere
 {
-	position = 0. 0. 0.;
-	radius = 0.5;
-	material = yellow;
-}
-
-sphere
-{
 	position = 5. 5. 3.;
 	radius = 1.5;
-	material = red_mat;
+	material = yellow;
 }
 
 sphere
@@ -43,4 +41,65 @@ sphere
 	material = red_mat;
 	radius = 0.5;
 	position = -6. -4. 0.;
+}
+
+sphere
+{
+	position = 0. 2. 0.;
+	radius = 0.5;
+	material = yellow;
+}
+
+triangle
+{
+	material = default_mat;
+	
+	v0 = -5. 0. 0.;
+	v1 = 0. 0. 0.;
+	v2 = 0. 5. 0.;
+}
+
+triangle
+{
+	material = yellow;
+	
+	v0 = -5. 0. 0.;
+	v1 = -5. 5. 0.;
+	v2 = 0. 5. 0.;
+}
+
+triangle
+{
+	material = red_mat;
+	
+	v0 = -5. 5. 0.;
+	v1 = 0. 5. 0.;
+	v2 = -5. 5. 5.;
+}
+
+triangle
+{
+	material = red_mat;
+
+	v0 = -5. 0. 0.;
+	v1 = 0. 0. 0.;
+	v2 = 0. 0. -2.;
+}
+
+triangle
+{
+	material = yellow;
+
+	v0 = -5. 0. 0.;
+	v1 = -5. 0. -2.;
+	v2 = 0. 0. -2.;
+}
+
+triangle
+{
+	material = default_mat;
+
+	v0 = -5. 0. -2.;
+	v1 = -5. -5. -2.;
+	v2 = 0. 0. -2.;
 }

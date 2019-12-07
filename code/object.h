@@ -81,6 +81,11 @@ public:
 
 	~Triangle() {}
 
+	Vector3& operator[] (int i)
+	{
+		return (m_vertecies[i]);
+	}
+
 	bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const;
 };
 

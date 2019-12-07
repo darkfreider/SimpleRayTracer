@@ -174,7 +174,7 @@ int main(int argc, char *argv[])
 	Image32 image(1280, 720);
 
 	// TODO(max): make a camera abstraction
-	Vector3 camera_pos(0, -15, 6);
+	Vector3 camera_pos(10,-10, 6);
 	Vector3 camera_z = camera_pos.normalize(); // look at (0, 0, 0)
 	Vector3 camera_x = Vector3(0, 0, 1).cross(camera_z).normalize();
 	Vector3 camera_y = camera_z.cross(camera_x).normalize();

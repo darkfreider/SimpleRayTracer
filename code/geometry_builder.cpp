@@ -9,6 +9,7 @@
 #include <cassert>
 #include <cstdlib>
 
+#include "math.h"
 #include "tokeniser.h"
 #include "material.h"
 #include "object.h"
@@ -75,6 +76,104 @@ bool Geometry_builder::match_token_str(const std::string& str_val)
 	return (false);
 }
 
+Vector3 Geometry_builder::parse_vector3_float()
+{
+	// TODO(max): abstract it into a function (init_float_vector)
+	expect_token(Tokeniser::Token_kind('='));
+
+	Vector3 result;
+	for (int i = 0; i < 3; i++)
+	{
+		bool need_negate = false;
+		if (match_token(Tokeniser::Token_kind('-')))
+		{
+			need_negate = true;
+		}
+
+		if (is_token(Tokeniser::Token_kind::TOKEN_FLOAT))
+		{
+			result[i] = m_tokeniser.get_token().float_val;
+			result[i] = (need_negate) ? -result[i] : result[i];
+			expect_token(Tokeniser::Token_kind::TOKEN_FLOAT);
+		}
+		else
+		{
+			syntax_error("Expected Token_kind::TOKEN_FLOAT");
+		}
+	}
+
+	return (result);
+}
+
+void Geometry_builder::init_object_material(Object *obj)
+{
+	expect_token(Tokeniser::Token_kind('='));
+
+	if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
+	{
+		auto entry = m_material_table.find(m_tokeniser.get_token().str_val);
+		expect_token(Tokeniser::Token_kind::TOKEN_NAME);
+		if (entry != m_material_table.end())
+		{
+			obj->set_material(entry->second);
+		}
+		else
+		{
+			syntax_error("Undefined material name");
+		}
+	}
+	else
+	{
+		syntax_error("Expected material name");
+	}
+}
+
+void Geometry_builder::init_triangle_attributes(Triangle *t)
+{
+	// TODO(max): check for all attributes to be inited
+	expect_token(Tokeniser::Token_kind('{'));
+
+	while (!match_token(Tokeniser::Token_kind('}')))
+	{
+		if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
+		{
+			if (match_token_str("material"))
+			{
+				init_object_material(t);
+			}
+			else if (match_token_str("v0"))
+			{
+				t->operator[](0) = parse_vector3_float();
+			}
+			else if (match_token_str("v1"))
+			{
+				t->operator[](1) = parse_vector3_float();
+			}
+			else if (match_token_str("v2"))
+			{
+				t->operator[](2) = parse_vector3_float();
+			}
+			else
+			{
+				syntax_error("Unknown triangle attribute");
+			}
+
+			expect_token(Tokeniser::Token_kind(';'));
+		}
+		else
+		{
+			syntax_error("Expected material attribute name");
+		}
+	}
+}
+
+void Geometry_builder::triangle_definition()
+{
+	Triangle *t = new Triangle();
+	m_objects.push_back(t);
+	init_triangle_attributes(t);
+}
+
 void Geometry_builder::init_sphere_attributes(Sphere *s)
 {
 	expect_token(Tokeniser::Token_kind('{'));
@@ -114,28 +213,8 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 				{
 					syntax_error("Sphere's position redefinition");
 				}
-				// TODO(max): abstract it into a function
-				expect_token(Tokeniser::Token_kind('='));
-				Vector3 pos_value;
-				for (int i = 0; i < 3; i++)
-				{
-					bool need_negate = false;
-					if (match_token(Tokeniser::Token_kind('-')))
-					{
-						need_negate = true;
-					}
-
-					if (is_token(Tokeniser::Token_kind::TOKEN_FLOAT))
-					{
-						pos_value[i] = m_tokeniser.get_token().float_val;
-						pos_value[i] = (need_negate) ? -pos_value[i] : pos_value[i];
-						expect_token(Tokeniser::Token_kind::TOKEN_FLOAT);
-					}
-					else
-					{
-						syntax_error("Expected Token_kind::TOKEN_FLOAT");
-					}
-				}
+				
+				Vector3 pos_value = parse_vector3_float();
 
 				s->set_position(pos_value);
 				position_inited = true;
@@ -146,27 +225,9 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 				{
 					syntax_error("Sphere's material redefinition");
 				}
-				// TODO(max): abstract this in a function and use it within a triangle
-				expect_token(Tokeniser::Token_kind('='));
-
-				if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
-				{
-					auto entry = m_material_table.find(m_tokeniser.get_token().str_val);
-					expect_token(Tokeniser::Token_kind::TOKEN_NAME);
-					if (entry != m_material_table.end())
-					{
-						s->set_material(entry->second);
-						material_inited = true;
-					}
-					else
-					{
-						syntax_error("Undefined material name");
-					}
-				}
-				else
-				{
-					syntax_error("Expected material name");
-				}
+				
+				init_object_material(s);
+				material_inited = true;
 			}
 			else
 			{
@@ -287,8 +348,7 @@ void Geometry_builder::definition()
 		}
 		else if (match_token_str("triangle"))
 		{
-			// TODO(max): Implement it !!!!!!
-			assert(0);
+			triangle_definition();
 		}
 		else if (match_token_str("light"))
 		{

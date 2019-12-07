@@ -55,9 +55,14 @@ private:
 	void definition();
 	void material_definition();
 	void sphere_definition();
+	void triangle_definition();
 
 	void init_material_attributes(Material *m);
 	void init_sphere_attributes(Sphere *s);
+	void init_triangle_attributes(Triangle *t);
+
+	void init_object_material(Object *obj);
+	Vector3 parse_vector3_float();
 };
 
 #define _GEOMETRY_BUILDER_H
