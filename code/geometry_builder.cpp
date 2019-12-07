@@ -16,7 +16,7 @@
 
 void Geometry_builder::syntax_error(const std::string& message)
 {
-	std::cerr << "Syntas error: " << message << "at line " << m_tokeniser.get_token().line_number << std::endl;
+	std::cerr << "Syntas error: " << message << " at line " << m_tokeniser.get_token().line_number << std::endl;
 	std::exit(1234);
 }
 
@@ -35,6 +35,7 @@ bool Geometry_builder::expect_token(Tokeniser::Token_kind kind)
 	if (m_tokeniser.get_token().kind != kind)
 	{
 		std::cerr << "Unexpected token (?)" << "at line " << m_tokeniser.get_token().line_number << std::endl;
+		exit(1234);
 	}
 
 	m_tokeniser.advance_token();
@@ -113,7 +114,7 @@ void Geometry_builder::init_sphere_attributes(Sphere *s)
 				{
 					syntax_error("Sphere's position redefinition");
 				}
-
+				// TODO(max): abstract it into a function
 				expect_token(Tokeniser::Token_kind('='));
 				Vector3 pos_value;
 				for (int i = 0; i < 3; i++)

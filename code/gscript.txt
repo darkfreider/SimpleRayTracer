@@ -6,6 +6,9 @@
 # geometry objects and lights are anonimous
 # materials need names
 
+# need global variables structure with differend fields
+# like screen resolution, background color ...
+
 material : red_mat
 {
 	color = 222 33 62;
@@ -16,11 +19,16 @@ material : green_mat
 	color = 3 252 165;
 }
 
+material : yellow
+{
+	color = 255 251 33;
+}
+
 sphere
 {
 	position = 0. 0. 0.;
 	radius = 0.5;
-	material = green_mat;
+	material = yellow;
 }
 
 sphere

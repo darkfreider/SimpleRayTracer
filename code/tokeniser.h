@@ -41,6 +41,7 @@ public:
 		Token(const Token& nt)
 		{
 			kind = nt.kind;
+			line_number = nt.line_number;
 			if (kind == TOKEN_FLOAT)
 			{
 				float_val = nt.float_val;
@@ -61,6 +62,7 @@ public:
 				return (*this);
 
 			kind = rhs.kind;
+			line_number = rhs.line_number;
 			if (kind == TOKEN_FLOAT)
 			{
 				float_val = rhs.float_val;
