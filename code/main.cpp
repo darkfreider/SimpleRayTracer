@@ -3,6 +3,7 @@
 #include <fstream>
 #include <string>
 #include <vector>
+#include <algorithm>
 
 
 #include <cstdlib>
@@ -16,6 +17,8 @@
 #include "geometry_builder.h"
 #include "material.h"
 #include "object.h"
+#include "camera.h"
+#include "light.h"
 
 #include "math.cpp"
 #include "material.cpp"
@@ -99,10 +102,37 @@ void Image32::write_image(const std::string& file_name) const
 	}
 }
 
-Vector3 ray_trace(const std::vector<Object *>& objects, const Vector3& ray_origin, const Vector3& ray_dir)
+float does_intersect(const std::vector<Object *>& objects, const Vector3& ray_origin, const Vector3& ray_dir)
 {
-	Vector3 result = Vector3(0.2, 0, 0.8);
+	float in_shade = 1.0f;
+	float t_min = FLT_MAX;
+	for (int i = 0; i < objects.size(); i++)
+	{
+		float t = 0.0f;
+		if (objects[i]->intersect(ray_origin + 0.0001 * ray_dir, ray_dir, t))
+		{
+			in_shade = 0.15f;
+			break;
+		}
+	}
 
+	return (in_shade);
+}
+
+float clamp_float(float value, float low, float high)
+{
+	float result = value;
+	if (value < low)
+		result = low;
+	else if (value > high)
+		result = high;
+
+	return (result);
+}
+
+Vector3 ray_trace(const std::vector<Object *>& objects, const std::vector<Light *>& lights, const Vector3& ray_origin, const Vector3& ray_dir)
+{
+	Vector3 result;
 	Object *obj = 0;
 	float t_min = FLT_MAX;
 	for (int i = 0; i < objects.size(); i++)
@@ -120,7 +150,34 @@ Vector3 ray_trace(const std::vector<Object *>& objects, const Vector3& ray_origi
 
 	if (obj)
 	{
-		result = obj->get_material()->get_color();
+		Vector3 hit_point = ray_origin + t_min * ray_dir;
+		Vector3 hit_normal;
+		obj->get_surface_properties(hit_point, hit_normal);
+
+		for (int i = 0; i < lights.size(); i++)
+		{
+			Vector3 light_dir;
+			Vector3 light_intencity;
+			lights[i]->get_shading_info(hit_point, hit_normal, light_dir, light_intencity);
+
+			float in_shade = does_intersect(objects, hit_point, light_dir);
+
+			Vector3 obj_color = obj->get_material()->get_color();
+			Vector3 color = in_shade * obj_color.hadamard(light_intencity) * std::max(0.0f, hit_normal.dot(light_dir));
+			//color.r = clamp_float(color.r, 0.0f, 1.0f);
+			//color.g = clamp_float(color.g, 0.0f, 1.0f);
+			//color.b = clamp_float(color.b, 0.0f, 1.0f);
+			result += color;
+		}
+		result /= float(lights.size());
+
+		result.r = clamp_float(result.r, 0.0f, 1.0f);
+		result.g = clamp_float(result.g, 0.0f, 1.0f);
+		result.b = clamp_float(result.b, 0.0f, 1.0f);
+	}
+	else
+	{
+		result = Vector3(0., 0., 1.);
 	}
 
 	return (result);
@@ -136,6 +193,19 @@ uint32_t unpack_vector3_to_argb(const Vector3& color)
 			 uint8_t(255.0f * color.b) << 0;
 
 	return (result);
+}
+
+float linear_to_srgb(float linear)
+{
+	float srgb;
+
+	srgb = 1.055f * pow(linear, 1.0f / 2.4f) - 0.055f;
+	if (linear < 0.00313066f)
+	{
+		srgb = linear * 12.92f;
+	}
+
+	return (srgb);
 }
 
 std::string get_file_contents(const char *file_name)
@@ -171,50 +241,41 @@ int main(int argc, char *argv[])
 	Geometry_builder builder;
 	builder.generate_geometry(get_file_contents(argv[1]));
 
-	Image32 image(1280, 720);
+	Camera camera(builder.get_camera());
+	Image32 image(camera.get_width(), camera.get_height());
 
-	// TODO(max): make a camera abstraction
-	Vector3 camera_pos(10,-10, 6);
-	Vector3 camera_z = camera_pos.normalize(); // look at (0, 0, 0)
-	Vector3 camera_x = Vector3(0, 0, 1).cross(camera_z).normalize();
-	Vector3 camera_y = camera_z.cross(camera_x).normalize();
-
-	float film_distance = 1.0f;
-	float film_width = 1.0f;
-	float film_height = 1.0f;
-
-	if (image.get_width() > image.get_height())
-	{
-		film_width *= float(image.get_width()) / float(image.get_height());
-	}
-	if (image.get_height() > image.get_width())
-	{
-		film_height *= float(image.get_height()) / float(image.get_width());
-	}
-
-	float half_film_width  = 0.5f * film_width;
-	float half_film_height = 0.5f * film_height;
-
-	Vector3 film_center = camera_pos - film_distance * camera_z;
+	std::vector<Light *> lights;
+	//lights.push_back(new Distant_light(Vector3(0., 1., -0.5)));
+	//lights.push_back(new Spherical_light(Vector3(0., 2., 3.), 5.0f));
+	//lights.push_back(new Spherical_light(Vector3(0., -2., 3.), 10.0f));
+	lights.push_back(new Spherical_light(Vector3(0., 0., 15.), 50.0f));
+	//lights.back()->
+	//lights.push_back(new Spherical_light(Vector3(5., 2., 5.), 10.0f));
 
 
 	uint32_t *out = image.get_pixels();
 	for (int y = 0; y < image.get_height(); y++)
 	{
-		float film_y = -1.0f + 2.0f * (float(y) / image.get_height());
-
+		float film_y = camera.get_film_y(y);
 		for (int x = 0; x < image.get_width(); x++)
 		{
-			float film_x = -1.0f + 2.0f * (float(x) / image.get_width());
-
-			Vector3 film_pos = film_center + camera_x * film_x * half_film_width + camera_y * film_y * half_film_height;
+			float film_x = camera.get_film_x(x);
 			
-			Vector3 ray_origin(camera_pos);
-			Vector3 ray_dir = (film_pos - ray_origin).normalize();
+			Vector3 ray_origin;
+			Vector3 ray_dir;
+			camera.get_origin_and_dir(film_x, film_y, ray_origin, ray_dir);
 
-			uint32_t color = unpack_vector3_to_argb(ray_trace(builder.get_objects(), ray_origin, ray_dir));
+			Vector3 color = ray_trace(builder.get_objects(), builder.get_lights(), ray_origin, ray_dir);
 
-			out[y * image.get_width() + x] = color;
+#if 1
+			uint32_t out_color = unpack_vector3_to_argb(Vector3(
+				linear_to_srgb(color.r),
+				linear_to_srgb(color.g),
+				linear_to_srgb(color.b)
+			));
+#endif
+			//uint32_t out_color = unpack_vector3_to_argb(color);
+			out[y * image.get_width() + x] = out_color;
 
 		}
 	}

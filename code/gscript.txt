@@ -9,19 +9,42 @@
 # need global variables structure with differend fields
 # like screen resolution, background color ...
 
+# specify triangle vertecies counter clock-wise
+
 material : default_mat
 {
 	color = 255 255 255;
 }
 
+# sphere
+# position 5. 5. 3.
+# radius 1.5
+# material default_mat
+# end
+
+camera
+{
+	look_from = 10. -15. 10.;
+	look_at = 0. 2. 1.;
+	resolution = 1280 720;
+}
+
+distant_light
+{
+	direction = 0. 1. -1.;
+	color = 255 255 255;
+}
+
+
 material : red_mat
 {
-	color = 222 33 62;
+	# color = 222 0 0;
+	color = 230 25 55;
 }
 
 material : green_mat
 {
-	color = 3 252 165;
+	color = 200 56 234;
 }
 
 material : yellow
@@ -39,20 +62,20 @@ sphere
 sphere
 {
 	material = red_mat;
-	radius = 0.5;
-	position = -6. -4. 0.;
+	radius = 1.2;
+	position = -2.5 -2. 3.;
 }
 
 sphere
 {
-	position = 0. 2. 0.;
+	position = 0. 2. 1.;
 	radius = 0.5;
 	material = yellow;
 }
 
 triangle
 {
-	material = default_mat;
+	material = red_mat;
 	
 	v0 = -5. 0. 0.;
 	v1 = 0. 0. 0.;
@@ -61,11 +84,11 @@ triangle
 
 triangle
 {
-	material = yellow;
+	material = red_mat;
 	
 	v0 = -5. 0. 0.;
-	v1 = -5. 5. 0.;
-	v2 = 0. 5. 0.;
+	v1 = 0. 5. 0.;
+	v2 = -5. 5. 0.;
 }
 
 triangle
@@ -81,14 +104,14 @@ triangle
 {
 	material = red_mat;
 
-	v0 = -5. 0. 0.;
-	v1 = 0. 0. 0.;
+	v0 = 0. 0. 0.;
+	v1 = -5. 0. 0.;
 	v2 = 0. 0. -2.;
 }
 
 triangle
 {
-	material = yellow;
+	material = red_mat;
 
 	v0 = -5. 0. 0.;
 	v1 = -5. 0. -2.;
@@ -97,7 +120,7 @@ triangle
 
 triangle
 {
-	material = default_mat;
+	material = red_mat;
 
 	v0 = -5. 0. -2.;
 	v1 = -5. -5. -2.;

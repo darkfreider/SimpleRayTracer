@@ -1,6 +1,11 @@
 
 #include "object.h"
 
+void Sphere::get_surface_properties(const Vector3& hit_point, Vector3& surface_normal) const
+{
+	surface_normal=  (hit_point - m_center).normalize();
+}
+
 bool Sphere::intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const
 {
 	bool result = false;
@@ -32,6 +37,16 @@ bool Sphere::intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& h
 	}
 
 	return (result);
+}
+
+void Triangle::get_surface_properties(const Vector3& hit_point, Vector3& surface_normal) const
+
+{
+	Vector3 a = m_vertecies[1] - m_vertecies[0];
+	Vector3 b = m_vertecies[2] - m_vertecies[0];
+	surface_normal = a.cross(b).normalize();
+
+	
 }
 
 bool Triangle::intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const
@@ -70,9 +85,4 @@ bool Triangle::intersect(const Vector3& ray_orig, const Vector3& ray_dir, float&
 	}
 
 	return (result);
-}
-
-bool Quad::intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const
-{
-	return (false);
 }

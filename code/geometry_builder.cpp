@@ -13,6 +13,7 @@
 #include "tokeniser.h"
 #include "material.h"
 #include "object.h"
+#include "light.h"
 
 
 void Geometry_builder::syntax_error(const std::string& message)
@@ -103,6 +104,137 @@ Vector3 Geometry_builder::parse_vector3_float()
 	}
 
 	return (result);
+}
+
+// Make vector3 templatized for int and float
+void Geometry_builder::parse_vector_int(uint32_t *result, uint32_t n)
+{
+	expect_token(Tokeniser::Token_kind('='));
+
+	Vector3 color_value;
+	for (int i = 0; i < n; i++)
+	{
+		if (is_token(Tokeniser::Token_kind::TOKEN_INT))
+		{
+			result[i] = m_tokeniser.get_token().int_val;
+			expect_token(Tokeniser::Token_kind::TOKEN_INT);
+		}
+		else
+		{
+			syntax_error("Expected Token_kind::TOKEN_INT");
+		}
+	}
+}
+
+void Geometry_builder::init_distant_light_attributes(Distant_light *light)
+{
+	expect_token(Tokeniser::Token_kind('{'));
+
+	bool color_inited = false;
+	bool direction_inited = false;
+
+	while (!match_token(Tokeniser::Token_kind('}')))
+	{
+		if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
+		{
+			if (match_token_str("color"))
+			{
+				if (color_inited)
+				{
+					syntax_error("Color redefinition");
+				}
+
+				Vector3 color_value;
+				uint32_t rgb[3];
+
+				parse_vector_int(rgb, 3);
+
+				if (rgb[0] > 255) syntax_error("Expected color value in range 0-255");
+				if (rgb[1] > 255) syntax_error("Expected color value in range 0-255");
+				if (rgb[2] > 255) syntax_error("Expected color value in range 0-255");
+
+				color_value.r = float(rgb[0]) / 255.0f;
+				color_value.g = float(rgb[1]) / 255.0f;
+				color_value.b = float(rgb[2]) / 255.0f;
+				light->set_color(color_value);
+				color_inited = true;
+			}
+			else if (match_token_str("direction"))
+			{
+				if (direction_inited)
+				{
+					syntax_error("direction redifinition");
+				}
+				light->set_direction(parse_vector3_float());
+				direction_inited = true;
+			}
+			else
+			{
+				syntax_error("Unknown distant_light attribute");
+			}
+
+			expect_token(Tokeniser::Token_kind(';'));
+		}
+		else
+		{
+			syntax_error("Expected material attribute name");
+		}
+	}
+
+	if (!color_inited || !direction_inited)
+	{
+		syntax_error("Not all distant_light attributes are initialised");
+	}
+}
+
+void Geometry_builder::distant_light_definition()
+{
+	Distant_light *dl = new Distant_light();
+	init_distant_light_attributes(dl);
+	m_lights.push_back(dl);
+}
+
+void Geometry_builder::init_camera_attributes(Camera *cam)
+{
+	// TODO(max): check for all attributes to be inited
+	expect_token(Tokeniser::Token_kind('{'));
+
+	while (!match_token(Tokeniser::Token_kind('}')))
+	{
+		if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
+		{
+			if (match_token_str("look_from"))
+			{
+				cam->set_look_from(parse_vector3_float());
+			}
+			else if (match_token_str("look_at"))
+			{
+				cam->set_look_at(parse_vector3_float());
+			}
+			else if (match_token_str("resolution"))
+			{
+				uint32_t resolution[2] = {};
+				parse_vector_int(resolution, 2);
+				cam->set_resolution(resolution[0], resolution[1]);
+			}
+			else
+			{
+				syntax_error("Unknown triangle attribute");
+			}
+
+			expect_token(Tokeniser::Token_kind(';'));
+		}
+		else
+		{
+			syntax_error("Expected material attribute name");
+		}
+	}
+}
+
+void Geometry_builder::camera_definition()
+{
+	m_camera = new Camera();
+	init_camera_attributes(m_camera);
 }
 
 void Geometry_builder::init_object_material(Object *obj)
@@ -267,26 +399,14 @@ void Geometry_builder::init_material_attributes(Material *mat)
 		{
 			if (match_token_str("color"))
 			{
-				expect_token(Tokeniser::Token_kind('='));
-
 				Vector3 color_value;
 				uint32_t rgb[3];
-				for (int i = 0; i < 3; i++)
-				{
-					if (is_token(Tokeniser::Token_kind::TOKEN_INT))
-					{
-						rgb[i] = m_tokeniser.get_token().int_val;
-						if (rgb[i] > 255)
-						{
-							syntax_error("Expected color value in range 0-255");
-						}
-						expect_token(Tokeniser::Token_kind::TOKEN_INT);
-					}
-					else
-					{
-						syntax_error("Expected Token_kind::TOKEN_INT");
-					}
-				}
+				
+				parse_vector_int(rgb, 3);
+
+				if (rgb[0] > 255) syntax_error("Expected color value in range 0-255");
+				if (rgb[1] > 255) syntax_error("Expected color value in range 0-255");
+				if (rgb[2] > 255) syntax_error("Expected color value in range 0-255");
 
 				color_value.r = float(rgb[0]) / 255.0f;
 				color_value.g = float(rgb[1]) / 255.0f;
@@ -336,6 +456,8 @@ void Geometry_builder::material_definition()
 
 void Geometry_builder::definition()
 {
+	bool camera_inited = false;
+
 	if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
 	{
 		if (match_token_str("material"))
@@ -350,10 +472,24 @@ void Geometry_builder::definition()
 		{
 			triangle_definition();
 		}
-		else if (match_token_str("light"))
+		else if (match_token_str("distant_light"))
 		{
-			// TODO(max): Implement it !!!!!!
+			distant_light_definition();
+		}
+		else if (match_token_str("spherical_light"))
+		{
+			// TODO(max): implement light !!!!!!!!!!!
 			assert(0);
+		}
+		else if (match_token_str("camera"))
+		{
+			if (camera_inited)
+			{
+				syntax_error("Camera redefinition");
+			}
+			camera_definition();
+			m_camera->init();
+			camera_inited = true;
 		}
 		else
 		{

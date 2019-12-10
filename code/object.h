@@ -32,7 +32,7 @@ public:
 	}
 
 	virtual bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const = 0;
-
+	virtual void get_surface_properties(const Vector3& hit_point, Vector3& surface_normal) const = 0;
 };
 
 // PERFORMANCE(max): precompute r*r and a*a
@@ -64,6 +64,7 @@ public:
 	}
 
 	bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const;
+	void get_surface_properties(const Vector3& hit_point, Vector3& surface_normal) const;
 };
 
 class Triangle : public Object
@@ -87,23 +88,7 @@ public:
 	}
 
 	bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const;
-};
-
-class Quad : public Object
-{
-	Vector3 m_vertecies[4];
-
-public:
-	// TODO(max): how to initialize quad?
-	//            1. give a base point and two vectors
-	//            2. give a base point and 3 points relative to the base point
-	Quad() : Object()
-	{
-
-	}
-	~Quad() {}
-
-	bool intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const;
+	void get_surface_properties(const Vector3& hit_point, Vector3& surface_normal) const;
 };
 
 #define _OBJECT_H
