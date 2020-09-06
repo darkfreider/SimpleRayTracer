@@ -1,0 +1,74 @@
+
+
+camera
+{ 
+	look_at = 4. 0. 2.;
+	resolution = 1280 720;
+	rays_per_pixel = 1;
+	
+	look_from = -7. -7. 3.;
+}
+
+spherical_light
+{
+	position = 0. -5. 3.;
+	color = 255 255 255;
+	intencity = 5.;
+}
+
+material : mirror_mat
+{
+	reflectance = 1.0;
+	color = 220 220 220;
+}
+
+material : red_mat
+{
+	reflectance = 0.0;
+	color = 230 10 10;
+}
+
+sphere
+{
+	material = red_mat;
+	position = 0. 0. 0.;
+	radius = 1.2;
+}
+
+# mirror 1
+
+triangle 
+{ 
+	material = mirror_mat;
+	v0 = 3. 7. -7.;
+	v1 = 3. -7. 7.;
+	v2 = 3. 7. 7.;
+}
+
+triangle 
+{ 
+	material = mirror_mat;
+	v0 = 3. 7. -7.;
+	v1 = 3. -7. -7.;
+	v2 = 3. -7. 7.;
+}
+
+
+# mirror 2
+
+
+triangle 
+{ 
+	material = mirror_mat;
+	v0 = -8. 4. -4.;
+	v1 = -8. -4. 4.;
+	v2 = -8. 4. 4.;
+}
+
+triangle 
+{ 
+	material = mirror_mat;
+	v0 = -8. 4. -4.;
+	v1 = -8. -4. -4.;
+	v2 = -8. -4. 4.;
+}

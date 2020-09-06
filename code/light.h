@@ -37,7 +37,7 @@ public:
 
 	void set_direction(const Vector3& d)
 	{
-		dir = d;
+		dir = d.normalize();
 	}
 
 	void get_shading_info(const Vector3& hit_position, const Vector3& hit_normal, Vector3& light_dir, Vector3& intencity) const

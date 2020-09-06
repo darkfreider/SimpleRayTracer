@@ -35,7 +35,6 @@ public:
 	virtual void get_surface_properties(const Vector3& hit_point, Vector3& surface_normal) const = 0;
 };
 
-// PERFORMANCE(max): precompute r*r and a*a
 class Sphere : public Object
 {
 	float m_radius;

@@ -1,4 +1,4 @@
-
+#include"math.h"
 #include "object.h"
 
 void Sphere::get_surface_properties(const Vector3& hit_point, Vector3& surface_normal) const
@@ -6,6 +6,7 @@ void Sphere::get_surface_properties(const Vector3& hit_point, Vector3& surface_n
 	surface_normal=  (hit_point - m_center).normalize();
 }
 
+// PERFORMANCE(max): precompute r*r and a*a
 bool Sphere::intersect(const Vector3& ray_orig, const Vector3& ray_dir, float& hit_t) const
 {
 	bool result = false;

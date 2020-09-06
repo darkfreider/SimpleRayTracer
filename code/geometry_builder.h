@@ -22,28 +22,27 @@ class Geometry_builder
 	std::vector<Material *> m_materials;
 	std::vector<Object *> m_objects;
 	std::vector<Light *> m_lights;
-	Camera *m_camera;
+	std::vector<Camera *> m_cameras;
 
-	// QUESTION(max)
-	// Scene shoud be represented as:
-	//     vector<Materials *>
-	//     vector<Objects *>
-	//     vector<Light *>
 public:
-	Geometry_builder() : m_camera(0)
+	Geometry_builder()
 	{
 	}
 
 	~Geometry_builder()
 	{
-
 	}
 
 	void generate_geometry(const std::string& geometry_descr);
 
-	Camera& get_camera()
+	size_t get_camera_count()
 	{
-		return (*m_camera);
+		return m_cameras.size();
+	}
+
+	Camera& get_camera(int i)
+	{
+		return *m_cameras[i];
 	}
 
 	const std::vector<Light *>& get_lights() const 
@@ -72,13 +71,15 @@ private:
 	void triangle_definition();
 	void camera_definition();
 	void distant_light_definition();
+	void spherical_light_definition();
+
 
 	void init_material_attributes(Material *m);
 	void init_sphere_attributes(Sphere *s);
 	void init_triangle_attributes(Triangle *t);
 	void init_camera_attributes(Camera *c);
 	void init_distant_light_attributes(Distant_light *light);
-
+	void init_spherical_light_attributes(Spherical_light *light);
 
 	void init_object_material(Object *obj);
 	Vector3 parse_vector3_float();

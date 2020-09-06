@@ -6,9 +6,10 @@
 class Material
 {
 	Vector3 m_color;
+	float m_reflectance;
 
 public:
-	Material(const Vector3& c = Vector3(0, 0, 0)) : m_color(c)
+	Material(const Vector3& c = Vector3(0, 0, 0), float r = 0.0f) : m_color(c), m_reflectance(r)
 	{
 		
 	}
@@ -16,6 +17,16 @@ public:
 	~Material()
 	{
 		
+	}
+
+	void set_reflectance(float r)
+	{
+		m_reflectance = r;
+	}
+
+	float get_reflectance() const
+	{
+		return (m_reflectance);
 	}
 
 	const Vector3 get_color() const

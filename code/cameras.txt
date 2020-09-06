@@ -1,0 +1,8 @@
+camera { look_at = 0. 2. 1.; resolution = 1280 720; look_from = 23 0 10.; }
+camera { look_at = 0. 2. 1.; resolution = 1280 720; look_from = 12.0824 -19.5708 10.; }
+camera { look_at = 0. 2. 1.; resolution = 1280 720; look_from = -10.3057 -20.5619 10.; }
+camera { look_at = 0. 2. 1.; resolution = 1280 720; look_from = -22.91 -2.03248 10.; }
+camera { look_at = 0. 2. 1.; resolution = 1280 720; look_from = -13.7646 18.4265 10.; }
+camera { look_at = 0. 2. 1.; resolution = 1280 720; look_from = 8.44835 21.3922 10.; }
+camera { look_at = 0. 2. 1.; resolution = 1280 720; look_from = 22.6408 4.04906 10.; }
+camera { look_at = 0. 2. 1.; resolution = 1280 720; look_from = 15.3391 -17.1381 10.; }

@@ -7,8 +7,6 @@
 #include <string>
 #include <cassert>
 
-// QUESTION(max): Do I store line_number inside a token?
-
 class Tokeniser
 {
 public:
@@ -35,7 +33,6 @@ public:
 
 		explicit Token(Token_kind k = TOKEN_EOF) : kind(k)
 		{
-
 		}
 
 		Token(const Token& nt)
@@ -100,17 +97,14 @@ public:
 
 	Tokeniser() : current_char(0), m_current_token(0), m_line_number(1)
 	{
-
 	}
 
 	~Tokeniser()
 	{
-
 	}
 
 	Token& get_token()
 	{
-		// QUESTION(max): maybe check for end of token stream and always return TOKEN_EOF if there is no more tokens left
 		return m_tokens.at(m_current_token);
 	}
 
@@ -129,8 +123,6 @@ private:
 	void tokenise_int_val();
 	void tokenise_float_val();
 };
-
-void test_tokeniser();
 
 #define _TOKENISER_H
 #endif

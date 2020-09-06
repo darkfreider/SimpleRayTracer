@@ -9,6 +9,7 @@
 #include <cassert>
 #include <cstdlib>
 
+#include "geometry_builder.h"
 #include "math.h"
 #include "tokeniser.h"
 #include "material.h"
@@ -77,9 +78,9 @@ bool Geometry_builder::match_token_str(const std::string& str_val)
 	return (false);
 }
 
+// Make this function templatized for vector int and vector float
 Vector3 Geometry_builder::parse_vector3_float()
 {
-	// TODO(max): abstract it into a function (init_float_vector)
 	expect_token(Tokeniser::Token_kind('='));
 
 	Vector3 result;
@@ -112,7 +113,7 @@ void Geometry_builder::parse_vector_int(uint32_t *result, uint32_t n)
 	expect_token(Tokeniser::Token_kind('='));
 
 	Vector3 color_value;
-	for (int i = 0; i < n; i++)
+	for (uint32_t i = 0; i < n; i++)
 	{
 		if (is_token(Tokeniser::Token_kind::TOKEN_INT))
 		{
@@ -124,6 +125,70 @@ void Geometry_builder::parse_vector_int(uint32_t *result, uint32_t n)
 			syntax_error("Expected Token_kind::TOKEN_INT");
 		}
 	}
+}
+
+void Geometry_builder::init_spherical_light_attributes(Spherical_light *light)
+{
+	expect_token(Tokeniser::Token_kind('{'));
+	// TODO(max): check for uninitialised attributes
+
+	while (!match_token(Tokeniser::Token_kind('}')))
+	{
+		if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
+		{
+			if (match_token_str("color"))
+			{
+				Vector3 color_value;
+				uint32_t rgb[3];
+
+				parse_vector_int(rgb, 3);
+
+				if (rgb[0] > 255) syntax_error("Expected color value in range 0-255");
+				if (rgb[1] > 255) syntax_error("Expected color value in range 0-255");
+				if (rgb[2] > 255) syntax_error("Expected color value in range 0-255");
+
+				color_value.r = float(rgb[0]) / 255.0f;
+				color_value.g = float(rgb[1]) / 255.0f;
+				color_value.b = float(rgb[2]) / 255.0f;
+				light->set_color(color_value);
+			}
+			else if (match_token_str("position"))
+			{
+				light->set_position(parse_vector3_float());
+			}
+			else if (match_token_str("intencity"))
+			{
+				expect_token(Tokeniser::Token_kind('='));
+				if (is_token(Tokeniser::Token_kind::TOKEN_FLOAT))
+				{
+					float intencity = m_tokeniser.get_token().float_val;
+					expect_token(Tokeniser::Token_kind::TOKEN_FLOAT);
+					light->set_intencity(intencity);
+				}
+				else
+				{
+					syntax_error("Expected Token_kind::TOKEN_FLOAT");
+				}
+			}
+			else
+			{
+				syntax_error("Unknown spherical light attribute name");
+			}
+
+			expect_token(Tokeniser::Token_kind(';'));
+		}
+		else
+		{
+			syntax_error("Expected spherical light attribute name");
+		}
+	}
+}
+
+void Geometry_builder::spherical_light_definition()
+{
+	Spherical_light *sl = new Spherical_light();
+	init_spherical_light_attributes(sl);
+	m_lights.push_back(sl);
 }
 
 void Geometry_builder::init_distant_light_attributes(Distant_light *light)
@@ -177,7 +242,7 @@ void Geometry_builder::init_distant_light_attributes(Distant_light *light)
 		}
 		else
 		{
-			syntax_error("Expected material attribute name");
+			syntax_error("Expected distant light attribute name");
 		}
 	}
 
@@ -217,6 +282,12 @@ void Geometry_builder::init_camera_attributes(Camera *cam)
 				parse_vector_int(resolution, 2);
 				cam->set_resolution(resolution[0], resolution[1]);
 			}
+			else if (match_token_str("rays_per_pixel"))
+			{
+				uint32_t rpp;
+				parse_vector_int(&rpp, 1);
+				cam->set_rays_per_pixel((int)rpp);
+			}
 			else
 			{
 				syntax_error("Unknown triangle attribute");
@@ -233,8 +304,10 @@ void Geometry_builder::init_camera_attributes(Camera *cam)
 
 void Geometry_builder::camera_definition()
 {
-	m_camera = new Camera();
-	init_camera_attributes(m_camera);
+	Camera *cam = new Camera();
+	init_camera_attributes(cam);
+	cam->init();
+	m_cameras.push_back(cam);
 }
 
 void Geometry_builder::init_object_material(Object *obj)
@@ -275,15 +348,15 @@ void Geometry_builder::init_triangle_attributes(Triangle *t)
 			}
 			else if (match_token_str("v0"))
 			{
-				t->operator[](0) = parse_vector3_float();
+				(*t)[0] = parse_vector3_float();
 			}
 			else if (match_token_str("v1"))
 			{
-				t->operator[](1) = parse_vector3_float();
+				(*t)[1] = parse_vector3_float();
 			}
 			else if (match_token_str("v2"))
 			{
-				t->operator[](2) = parse_vector3_float();
+				(*t)[2] = parse_vector3_float();
 			}
 			else
 			{
@@ -392,6 +465,9 @@ void Geometry_builder::init_material_attributes(Material *mat)
 {
 	// TODO(max): check for all attributes to be inited
 	expect_token(Tokeniser::Token_kind('{'));
+	
+	bool color_inited = false;
+	bool reflectance_inited = false;
 
 	while (!match_token(Tokeniser::Token_kind('}')))
 	{
@@ -399,6 +475,10 @@ void Geometry_builder::init_material_attributes(Material *mat)
 		{
 			if (match_token_str("color"))
 			{
+				if (color_inited)
+				{
+					syntax_error("Color redefinition");
+				}
 				Vector3 color_value;
 				uint32_t rgb[3];
 				
@@ -412,6 +492,30 @@ void Geometry_builder::init_material_attributes(Material *mat)
 				color_value.g = float(rgb[1]) / 255.0f;
 				color_value.b = float(rgb[2]) / 255.0f;
 				mat->set_color(color_value);
+
+				color_inited = true;
+			}
+			else if (match_token_str("reflectance"))
+			{
+				if (reflectance_inited)
+				{
+					syntax_error("Reflectance redefinition");
+				}
+
+				expect_token(Tokeniser::Token_kind('='));
+				if (is_token(Tokeniser::Token_kind::TOKEN_FLOAT))
+				{
+					// TODO(max): reflectance should be in range (0, 1)
+					float reflectance = m_tokeniser.get_token().float_val;
+					expect_token(Tokeniser::Token_kind::TOKEN_FLOAT);
+					mat->set_reflectance(reflectance);
+				}
+				else
+				{
+					syntax_error("Expected Token_kind::TOKEN_FLOAT");
+				}
+
+				reflectance_inited = true;
 			}
 			else
 			{
@@ -424,6 +528,11 @@ void Geometry_builder::init_material_attributes(Material *mat)
 		{
 			syntax_error("Expected material attribute name");
 		}
+	}
+
+	if (!color_inited || !reflectance_inited)
+	{
+		syntax_error("Not all material attributes are initialised");
 	}
 }
 
@@ -456,8 +565,6 @@ void Geometry_builder::material_definition()
 
 void Geometry_builder::definition()
 {
-	bool camera_inited = false;
-
 	if (is_token(Tokeniser::Token_kind::TOKEN_NAME))
 	{
 		if (match_token_str("material"))
@@ -478,18 +585,11 @@ void Geometry_builder::definition()
 		}
 		else if (match_token_str("spherical_light"))
 		{
-			// TODO(max): implement light !!!!!!!!!!!
-			assert(0);
+			spherical_light_definition();
 		}
 		else if (match_token_str("camera"))
 		{
-			if (camera_inited)
-			{
-				syntax_error("Camera redefinition");
-			}
 			camera_definition();
-			m_camera->init();
-			camera_inited = true;
 		}
 		else
 		{
@@ -509,6 +609,11 @@ void Geometry_builder::generate_geometry(const std::string& geometry_descr)
 	while (!match_token(Tokeniser::Token_kind::TOKEN_EOF))
 	{
 		definition();
+	}
+
+	if (m_cameras.size() == 0)
+	{
+		syntax_error("Missing camera");
 	}
 }
 

@@ -1,0 +1,122 @@
+
+
+camera 
+{ 
+	look_at = 0. 0. 0.;
+	resolution = 1280 720;
+	
+	rays_per_pixel = 16;
+	look_from = -15. -10. 10.;
+}
+
+spherical_light
+{
+	position = 0. -2. 5.;
+	intencity = 30.0;
+	color = 255 255 255;
+}
+
+material : red_mat
+{
+	color = 220 0 0;
+	reflectance = 0.0;
+}
+
+material : green_mat
+{
+	reflectance = 1.0;
+	color = 90 234 135;
+}
+
+material : yellow_mat
+{
+	reflectance = 0.0;
+	color  = 255 255 0;
+}
+
+sphere
+{
+	position = 0. 0. 4.;
+	radius = 1.0;
+	material = yellow_mat;
+}
+
+# main plane
+
+triangle
+{
+	material = green_mat;
+
+	v0 = 5. -5. 0.;
+	v1 = 5. 5. 0.;
+	v2 = -5. -5. 0.;
+}
+
+triangle
+{
+	material = green_mat;
+
+	v0 = 5. 5. 0.;
+	v1 = -5. 5. 0.;
+	v2 = -5. -5. 0.;
+}
+
+# top plane
+
+triangle
+{
+	material = red_mat;
+	
+	v0 = 1. 1. 3.;
+	v1 = -1. 1. 3.;
+	v2 = -1. -1. 3.;
+}
+
+triangle
+{
+	material = red_mat;
+
+	v0 = -1. -1. 3.;
+	v1 = 1. -1. 3.;
+	v2 = 1. 1. 3.;
+}
+
+# plane -y
+
+triangle
+{
+	material = red_mat;
+
+	v0 = -1. -1. 3.;
+	v1 = -2. -2. 0.;
+	v2 = 1. -1. 3.;
+}
+
+triangle
+{
+	material = red_mat;
+
+	v0 = -2. -2. 0.;
+	v1 = 2. -2. 0.;
+	v2 = 1. -1. 3.;
+}
+
+# plane -x
+
+triangle
+{
+	material = red_mat;
+
+	v0 = -1. -1. 3.;
+	v1 = -1. 1. 3.;
+	v2 = -2. 2. 0.;
+}
+
+triangle
+{
+	material = red_mat;
+
+	v0 = -2. 2. 0.;
+	v1 = -2. -2. 0.;
+	v2 = -1. -1. 3.;
+}
